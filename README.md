@@ -100,7 +100,7 @@ PORTFOLIO RISK METRICS
 
 ---
 
-## Three things in here that are not obvious
+## Four things in here that are not obvious
 
 **Strikes are solved backwards from the price.** The client tells you what they
 can afford — for a subsidised agri cover that is around 3% of sum insured, above
@@ -116,6 +116,30 @@ common per-phase rate until the *combined* peril lands on its target. Getting
 this wrong is how a rate quietly triples between the model and the term sheet;
 the first version of this repo did exactly that, and the fix is in the git
 history.
+
+**A drifting peril shows up as a gap between the target and the blend.** The
+wheat cover is calibrated to 3% on the full record and comes out at 4.02%:
+
+```
+TREND CHECK (index stationarity, early vs recent record)
+  Terminal heat (grain filling)      shift  +35.4%   non-stationary
+  Excess rainfall at harvest         shift  +36.6%   non-stationary
+burn 10y / 20y / 30y: 4.639% / 4.049% / 3.380%
+blended burn cost   : 4.022%   (target 3.00%)
+```
+
+That is not a calibration failure, it is the answer. Heat days in the grain-
+filling phase are up 35% between the early and recent halves of the record, so
+the trailing-10-year window prices 1.3 points above the 30-year one and the
+blend follows it. A cover priced off the full history alone would have been
+sold a point too cheap. The cumin cover, whose heat exposure is nil, lands on
+3.03%.
+
+The rainfall flag on the same run is a good illustration of the test's limits:
+a mean-shift test on a heavy-tailed index moves a long way on a handful of
+extreme years, so `non-stationary` there is a prompt to go and look at the
+series, not a verdict. The heat index, being a bounded day count, is where the
+test is actually informative.
 
 **The underwriting year is not the calendar year.** A rabi cover runs December
 to February and spans two calendar years while being one season. If January is

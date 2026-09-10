@@ -17,7 +17,7 @@ import argparse
 
 import pandas as pd
 from _bootstrap import OUT
-from src import gridding, pricing, products
+from src import gridding, pricing, products, validation
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -91,8 +91,19 @@ def main() -> None:
     show["strike"] = show["strike"].round(2)
     print(show.to_string(index=False))
 
+    # The ladder was calibrated on the FULL record, so the trailing-window blend
+    # only drifts away from the target when the peril itself is drifting. When it
+    # does, that gap is the climate signal and it belongs in the rate, not in a
+    # footnote -- so the stationarity flag is printed next to the burn cost.
+    print("\nTREND CHECK (index stationarity, early vs recent record)")
+    for peril in spec.perils:
+        st = validation.index_stability(idx[idx["peril"] == peril.name])
+        if st:
+            print(f"  {peril.name:<34} shift {st['mean_shift_pct']:+6.1f}%   {st['flag']}")
+
     print("\nPRICING (exposure-weighted book)")
-    print(f"  blended burn cost   : {priced['burn_blend'].mean():.3%}")
+    print(f"  burn 10y / 20y / 30y: {priced['burn_10y'].mean():.3%} / {priced['burn_20y'].mean():.3%} / {priced['burn_30y'].mean():.3%}")
+    print(f"  blended burn cost   : {priced['burn_blend'].mean():.3%}   (target {target_total:.2%})")
     print(f"  risk premium        : {priced['risk_premium'].mean():.3%}")
     print(f"  commercial premium  : {priced['commercial_premium'].mean():.3%}")
     print(f"  worst node max loss : {priced['max_loss'].max():.1%} of SI")
