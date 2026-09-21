@@ -12,3 +12,4 @@ for product in cumin wheat; do
   python3 05_price_product.py --product "$product"
 done
 echo; echo "=================== 06_cyclone_cover.py ==================="; python3 06_cyclone_cover.py
+echo; echo "=================== 07_figures.py ==================="; python3 07_figures.py

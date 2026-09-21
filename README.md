@@ -16,8 +16,52 @@ below.
 git clone <this-repo> && cd parametric-risk-toolkit
 pip install -r requirements.txt
 python3 tests/test_toolkit.py     # 19 tests
-bash scripts/run_all.sh           # full pipeline, ~90 seconds
+bash scripts/run_all.sh           # full pipeline + figures, ~90 seconds
 ```
+
+![One season at one grid node: rainfall and blight indices against their strikes](docs/img/season_monitor.png)
+
+*What the cover looks like while the season is running: the index is recomputed
+every day and compared with the strike for the phase the crop is in. Here a
+130 mm three-day burst in early February clears the seed-set exit and pays in
+full; a nine-day humid spell in January clears the first blight strike.*
+
+---
+
+## A real product, simplified
+
+This is the shape of a cover I built and priced at WRMS — excess rainfall
+on cabbage, Chomu sub-district, Jaipur, rabi 2023-24. Product terms only; the
+client's exposure and loss data stay with the client.
+
+| | |
+|---|---|
+| Peril | Excess rainfall (flooding, soil saturation) |
+| Index | Maximum 3-day cumulative rainfall in the phase |
+| Data | IMD gridded daily rainfall, pricing and settlement |
+| Cover period | 1 Nov 2023 – 29 Feb 2024, three phases |
+| Sum insured | Rs 25,000 per bigha |
+| Premium | 4.5% of SI (Rs 1,125/bigha) or a cheaper 2.5% option with higher strikes |
+
+| 3-day rainfall | Nov (germination) | Dec–Jan (growth) | Feb (maturity) |
+|---|---:|---:|---:|
+| ≥ 20 mm  | Rs 950    | Rs 1,500  | Rs 1,875  |
+| ≥ 45 mm  | Rs 2,500  | Rs 3,750  | Rs 5,000  |
+| ≥ 70 mm  | Rs 6,250  | Rs 9,375  | Rs 12,500 |
+| ≥ 95 mm  | Rs 9,375  | Rs 15,000 | Rs 18,750 |
+| ≥ 120 mm | Rs 12,500 | Rs 18,750 | Rs 25,000 |
+
+The same rainfall pays more in February than in November because the crop is
+worth more the closer it is to harvest — the ladder follows the value at risk,
+not the weather. It went out with two premium options: same payouts, with the
+2.5% version starting at 40 mm instead of 20 mm.
+
+![Payout ladders: Jaipur cabbage excess rainfall and a UP blight cover](docs/img/payout_ladders.png)
+
+The blight cover on the right (a Uttar Pradesh district, February 2024) uses
+the same machinery with a different index: the longest run of consecutive
+blight-conducive days from ERA5, paying 10 / 20 / 30 / 50% of sum insured at
+4 / 9 / 14 / 19 days.
 
 ---
 
@@ -98,6 +142,11 @@ PORTFOLIO RISK METRICS
   max_loss           0.1223        PML_1_in_25   0.0927
 ```
 
+![35 years of back-tested portfolio loss against the 3% target](docs/img/burn_history.png)
+
+Priced at 3% on average, but the book loses more than 9% in two years out of
+35. That spread, not the average, is what the reinsurer is pricing.
+
 ---
 
 ## Four things in here that are not obvious
@@ -161,7 +210,7 @@ src/
                   basis-risk report
   products.py     crop calendars and product specs, declarative
   simulate.py     synthetic weather, exposure and storm tracks
-scripts/          01 generate -> 02 map -> 03 select -> 04 index -> 05 price -> 06 cyclone
+scripts/          01 generate -> 02 map -> 03 select -> 04 index -> 05 price -> 06 cyclone -> 07 figures
 tests/            19 unit tests on the parts that fail silently
 docs/             workflow, dataset selection, pricing notes, field notes
 ```
